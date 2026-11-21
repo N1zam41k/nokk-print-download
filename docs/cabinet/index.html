@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>NOKK Print — Kabinet</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236d3df5'/%3E%3Crect x='18' y='14' width='28' height='12' rx='2' fill='white'/%3E%3Crect x='12' y='26' width='40' height='18' rx='4' fill='white'/%3E%3Crect x='20' y='38' width='24' height='14' rx='2' fill='white' stroke='%236d3df5' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f6f4fb;--card:#fff;--ink:#1d1730;--muted:#6f6a80;--line:#e7e3f1;--brand:#6d3df5;--brand2:#9b6bff;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--chip:#f1edfd}
+@media (prefers-color-scheme:dark){:root{--bg:#120f1c;--card:#1b1729;--ink:#efeaff;--muted:#a59fba;--line:#2c2640;--chip:#2a2341}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:linear-gradient(120deg,var(--brand),var(--brand2));color:#fff}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;gap:12px;height:60px}
+.logo{width:34px;height:34px;border-radius:10px;background:#fff2;display:grid;place-items:center;font-size:18px}
+.top b{font-size:18px}
+.top .sp{flex:1}
+.top button{background:#ffffff26;color:#fff;border:0;border-radius:8px;padding:7px 11px;font:inherit;cursor:pointer}
+.top button:hover{background:#ffffff40}
+main.wrap{padding:20px 16px 40px}
+h2{font-size:17px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer;font:inherit}
+.tab.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.pc{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pc .name{font-size:20px;font-weight:650}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .grow{flex:1;min-width:0}
+.badge{font-size:12.5px;border-radius:999px;padding:3px 9px;white-space:nowrap;background:var(--chip)}
+.b-ok{color:var(--ok)} .b-bad{color:var(--bad)} .b-warn{color:var(--warn)}
+.sw{position:relative;width:42px;height:24px;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:var(--line);border-radius:999px;cursor:pointer;transition:.15s}
+.sw span:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 2px #0003}
+.sw input:checked+span{background:var(--brand)}
+.sw input:checked+span:before{transform:translateX(18px)}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit;font-size:13.5px}
+.btn.red{color:var(--bad)}
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th{text-align:left;color:var(--muted);font-weight:500;font-size:12.5px;padding:8px 6px;border-bottom:1px solid var(--line)}
+.table td{padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.table td.nm{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scroll{overflow-x:auto}
+.center{text-align:center;padding:60px 16px}
+.center .big{font-size:44px}
+.center a{color:var(--brand);font-weight:600}
+.err{color:var(--bad);margin-top:8px}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:12px 16px 28px}
+@media (max-width:600px){.table .hide-s{display:none}.pc .name{font-size:18px}#who{display:none}}
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <div class="logo">🖨</div><b>NOKK Print</b><span class="muted" style="color:#fff9" id="who"></span>
+  <span class="sp"></span>
+  <button id="langBtn"></button>
+  <button id="outBtn" hidden></button>
+</div></header>
+<main class="wrap" id="app"></main>
+<footer>© 2026 Nizomjon Rajabov, NOKK · <a href="https://t.me/nokk_print_bot" style="color:inherit">@nokk_print_bot</a></footer>
+<script>
+(() => {
+  const qs = new URLSearchParams(location.search);
+  const API = qs.get("api") || "https://jrofpzlxxzcpcspudguw.supabase.co/functions/v1/nokk/web/";
+  const T = {
+    uz: {
+      title: "Kabinet", lang: "Русский", out: "Chiqish", loginTitle: "Kabinetga kirish",
+      loginText: "Telegram'da @nokk_print_bot ni oching va «🖥 Kabinet» tugmasini bosing — kirish havolasi keladi.",
+      expired: "Havola eskirgan yoki ishlatilgan. Botdan yangisini oling.", loading: "Yuklanmoqda…",
+      online: "tarmoqda", offline: "tarmoqda emas", seen: "oxirgi marta", version: "versiya",
+      printers: "Printerlar", noPrinters: "Printer tanlanmagan", people: "Foydalanuvchilar", owner: "egasi", user: "xodim",
+      alerts: "Xabarnomalar", alertsHint: "Printer o'chsa, qog'oz tugasa — Telegram'ga xabar", remove: "O'chirish",
+      confirmRemove: "%s ni bu kompyuterdan o'chirasizmi?", myAlerts: "Menga xabar yuborish",
+      history: "Chop etish tarixi (30 kun)", empty: "Hali hech narsa chop etilmagan", more: "Yana",
+      when: "Vaqt", from: "Qayerdan", who: "Kim", what: "Nima", where: "Printer", pages: "Bet",
+      src: { telegram: "Telegram", app: "Ilova", web: "Veb-kassa", phone: "Telefon" },
+      st: { ok: "ishlayapti", offline: "o'chiq", paper_out: "qog'oz tugadi", paper_jam: "qog'oz tiqildi", door_open: "qopqoq ochiq", no_toner: "bo'yoq tugadi", error: "xato" },
+      kinds: { receipt: "Chek", a4: "A4", label: "Etiketka" }, fail: "xato", noPcs: "Sizda hali ulangan kompyuter yo'q.",
+    },
+    ru: {
+      title: "Кабинет", lang: "O'zbekcha", out: "Выйти", loginTitle: "Вход в кабинет",
+      loginText: "Откройте @nokk_print_bot в Telegram и нажмите «🖥 Кабинет» — придёт ссылка для входа.",
+      expired: "Ссылка устарела или уже использована. Возьмите новую в боте.", loading: "Загрузка…",
+      online: "в сети", offline: "не в сети", seen: "был в сети", version: "версия",
+      printers: "Принтеры", noPrinters: "Принтеры не выбраны", people: "Пользователи", owner: "владелец", user: "сотрудник",
+      alerts: "Уведомления", alertsHint: "Принтер выключен, нет бумаги — сообщение в Telegram", remove: "Удалить",
+      confirmRemove: "Удалить %s с этого компьютера?", myAlerts: "Присылать мне уведомления",
+      history: "История печати (30 дней)", empty: "Пока ничего не печаталось", more: "Ещё",
+      when: "Когда", from: "Откуда", who: "Кто", what: "Что", where: "Принтер", pages: "Стр.",
+      src: { telegram: "Telegram", app: "Приложение", web: "Веб-касса", phone: "Телефон" },
+      st: { ok: "работает", offline: "выключен", paper_out: "нет бумаги", paper_jam: "замялась бумага", door_open: "открыта крышка", no_toner: "нет чернил", error: "ошибка" },
+      kinds: { receipt: "Чек", a4: "A4", label: "Этикетка" }, fail: "ошибка", noPcs: "У вас пока нет подключённых компьютеров.",
+    },
+  };
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
+  };
+  const hash = new URLSearchParams(location.hash.slice(1));
+  let lang = hash.get("lang") || store.get("nokk.lang") || "ru";
+  let session = store.get("nokk.session");
+  let me = null, cur = store.get("nokk.device"), hist = [], histDone = false;
+  const app = document.getElementById("app");
+  const t = (k) => T[lang][k];
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fmt = (iso) => {
+    if (!iso) return "—";
+    const d = new Date(new Date(iso).getTime() + 5 * 3600e3), p = (x) => String(x).padStart(2, "0");
+    return `${p(d.getUTCDate())}.${p(d.getUTCMonth() + 1)} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+  };
+
+  async function api(path, body) {
+    const r = await fetch(API + path, {
+      method: body === undefined ? "GET" : "POST",
+      headers: { "Content-Type": "application/json", ...(session ? { Authorization: "Bearer " + session } : {}) },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401 && path !== "login") { session = null; store.set("nokk.session", null); showLogin(); throw new Error("login"); }
+    if (!r.ok) throw new Error(j.error || r.status);
+    return j;
+  }
+
+  function header() {
+    document.title = "NOKK Print — " + t("title");
+    document.documentElement.lang = lang;
+    document.getElementById("langBtn").textContent = t("lang");
+    const out = document.getElementById("outBtn");
+    out.textContent = t("out"); out.hidden = !session;
+    document.getElementById("who").textContent = me ? "· " + me.user.name : "";
+  }
+
+  function showLogin(msg) {
+    me = null; header();
+    app.innerHTML = `<div class="card center"><div class="big">🔐</div><h2>${t("loginTitle")}</h2>
+      <p class="muted">${esc(t("loginText"))}</p>${msg ? `<p class="err">${esc(msg)}</p>` : ""}
+      <p><a href="https://t.me/nokk_print_bot" target="_blank" rel="noopener">@nokk_print_bot</a></p></div>`;
+  }
+
+  function stateBadge(s) {
+    const cls = s === "ok" ? "b-ok" : s === "offline" ? "b-warn" : "b-bad";
+    return `<span class="badge ${cls}">${s === "ok" ? "●" : "⚠"} ${esc(t("st")[s] || s)}</span>`;
+  }
+
+  function render() {
+    header();
+    if (!me.devices.length) { app.innerHTML = `<div class="card center"><div class="big">💻</div><p>${t("noPcs")}</p></div>`; return; }
+    if (!me.devices.find((d) => d.id === cur)) cur = me.devices[0].id;
+    const d = me.devices.find((x) => x.id === cur);
+    const tabs = me.devices.length > 1 ? `<div class="tabs">${me.devices.map((x) =>
+      `<button class="tab ${x.id === cur ? "on" : ""}" data-dev="${x.id}"><span class="dot" style="background:${x.online ? "var(--ok)" : "var(--muted)"}"></span>${esc(x.name)}</button>`).join("")}</div>` : "";
+    const printers = d.printers.length ? d.printers.map((p) => `<div class="row"><div class="grow"><b>${esc(t("kinds")[p.kind] || p.kind)}</b>
+      <div class="muted" style="overflow:hidden;text-overflow:ellipsis">${esc(p.title)}${p.width ? " · " + p.width + " mm" : ""}</div></div>${stateBadge(p.state)}</div>`).join("")
+      : `<p class="muted">${t("noPrinters")}</p>`;
+    let people = "";
+    if (d.role === "owner") {
+      people = `<div class="card"><h2>👥 ${t("people")}</h2><p class="muted" style="margin-top:-6px">${esc(t("alertsHint"))}</p>${d.members.map((m) => `<div class="row">
+        <div class="grow"><b>${esc(m.name)}</b> <span class="muted">· ${m.role === "owner" ? t("owner") : t("user")}</span></div>
+        <span class="muted" style="font-size:13px">🔔</span>
+        <label class="sw" title="${esc(t("alerts"))}"><input type="checkbox" data-alert="${m.tg}" ${m.alerts ? "checked" : ""}><span></span></label>
+        ${m.role === "owner" ? "" : `<button class="btn red" data-remove="${m.tg}" data-name="${esc(m.name)}">${t("remove")}</button>`}</div>`).join("")}</div>`;
+    } else {
+      people = `<div class="card"><div class="row"><div class="grow"><b>🔔 ${t("myAlerts")}</b><div class="muted">${esc(t("alertsHint"))}</div></div>
+        <label class="sw"><input type="checkbox" data-alert="${me.user.tg}" ${d.alerts ? "checked" : ""}><span></span></label></div></div>`;
+    }
+    app.innerHTML = `${tabs}
+      <div class="card pc"><span class="dot" style="background:${d.online ? "var(--ok)" : "var(--muted)"};width:12px;height:12px"></span>
+        <span class="name">💻 ${esc(d.name)}</span>
+        <span class="muted">${d.online ? t("online") : t("offline") + " · " + t("seen") + " " + fmt(d.last_seen)} · ${t("version")} ${esc(d.version || "—")}</span></div>
+      <div class="grid"><div class="card"><h2>🖨 ${t("printers")}</h2>${printers}</div>${people}</div>
+      <div class="card"><h2>🕘 ${t("history")}</h2><div class="scroll" id="hist"><p class="muted">${t("loading")}</p></div></div>`;
+    loadHistory(true);
+  }
+
+  async function loadHistory(reset) {
+    if (reset) { hist = []; histDone = false; }
+    const box = document.getElementById("hist");
+    try {
+      const r = await api("history", { device: cur, offset: hist.length });
+      hist = hist.concat(r.items); histDone = r.items.length < 100;
+    } catch (e) { if (e.message !== "login") box.innerHTML = `<p class="err">${esc(e.message)}</p>`; return; }
+    if (!hist.length) { box.innerHTML = `<p class="muted">${t("empty")}</p>`; return; }
+    box.innerHTML = `<table class="table"><thead><tr><th>${t("when")}</th><th>${t("from")}</th><th class="hide-s">${t("who")}</th><th>${t("what")}</th><th class="hide-s">${t("where")}</th><th>${t("pages")}</th><th></th></tr></thead><tbody>
+      ${hist.map((h) => `<tr><td style="white-space:nowrap">${fmt(h.at)}</td><td>${esc(t("src")[h.source] || h.source)}</td><td class="hide-s">${esc(h.who)}</td>
+        <td class="nm" title="${esc(h.name)}">${esc(h.name)}</td><td class="hide-s nm" title="${esc(h.printer)}">${esc(h.printer)}</td>
+        <td>${h.pages}${h.copies > 1 ? " ×" + h.copies : ""}</td><td>${h.ok ? '<span class="b-ok">✓</span>' : `<span class="b-bad" title="${esc(h.error)}">✗ ${t("fail")}</span>`}</td></tr>`).join("")}
+      </tbody></table>${histDone ? "" : `<p style="text-align:center"><button class="btn" id="moreBtn">${t("more")}</button></p>`}`;
+  }
+
+  async function load() {
+    app.innerHTML = `<div class="card center"><p class="muted">${t("loading")}</p></div>`;
+    try { me = await api("me"); } catch (e) { if (e.message !== "login") app.innerHTML = `<div class="card center"><p class="err">${esc(e.message)}</p></div>`; return; }
+    if (!hash.get("lang") && !store.get("nokk.lang")) lang = me.user.lang === "uz" ? "uz" : "ru";
+    render();
+  }
+
+  app.addEventListener("click", async (ev) => {
+    const el = ev.target.closest("[data-dev],[data-remove],#moreBtn");
+    if (!el) return;
+    if (el.dataset.dev) { cur = el.dataset.dev; store.set("nokk.device", cur); render(); return; }
+    if (el.id === "moreBtn") { el.disabled = true; loadHistory(false); return; }
+    if (el.dataset.remove && confirm(t("confirmRemove").replace("%s", el.dataset.name))) {
+      try { await api("remove", { device: cur, tg: Number(el.dataset.remove) }); await load(); } catch (e) { alert(e.message); }
+    }
+  });
+  app.addEventListener("change", async (ev) => {
+    const el = ev.target;
+    if (!el.dataset.alert) return;
+    try { await api("alerts", { device: cur, tg: Number(el.dataset.alert), on: el.checked }); }
+    catch (e) { el.checked = !el.checked; if (e.message !== "login") alert(e.message); }
+  });
+  document.getElementById("langBtn").onclick = () => { lang = lang === "ru" ? "uz" : "ru"; store.set("nokk.lang", lang); me ? render() : showLogin(); };
+  document.getElementById("outBtn").onclick = async () => { try { await api("logout", {}); } catch {} session = null; store.set("nokk.session", null); showLogin(); };
+
+  (async () => {
+    const login = hash.get("login");
+    if (login) {
+      history.replaceState(null, "", location.pathname + location.search); // the one-time link must not stay in the address bar
+      try {
+        const r = await api("login", { token: login });
+        session = r.session; store.set("nokk.session", session);
+      } catch { if (!session) return showLogin(t("expired")); }
+    }
+    if (!session) return showLogin();
+    load();
+  })();
+})();
+</script>
+</body>
+</html>
