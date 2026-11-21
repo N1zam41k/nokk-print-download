@@ -1,0 +1,14 @@
+NOKK Print
+Copyright (c) 2026 Nizomjon Rajabov, NOKK. All rights reserved.
+
+Mualliflik huquqi (c) 2026 Nizomjon Rajabov, NOKK. Barcha huquqlar himoyalangan.
+Авторское право (c) 2026 Nizomjon Rajabov, NOKK. Все права защищены.
+
+This repository contains only the NOKK Print installers. You may download and install
+NOKK Print to use it for printing, free of charge. Without the written permission of the
+author you may not modify, resell, repackage or redistribute the installers or the program.
+
+Third-party components inside the program keep their own licenses (PDFium: BSD-3-Clause /
+Apache-2.0; DejaVu fonts; Go libraries: BSD-3-Clause), see the files installed with it.
+
+Contact: Telegram @Fixed_lvl

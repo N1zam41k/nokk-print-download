@@ -1,0 +1,40 @@
+name: Mirror new NOKK Print versions
+
+# Every hour: if the NOKK server has a new signed version, publish it here as a GitHub release.
+# Clients download from here (GitHub has no download limit). No source code is kept in this repository.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish the new version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          B=https://jrofpzlxxzcpcspudguw.supabase.co/storage/v1/object/public/nokk-print
+          curl -fsSL "$B/latest.json?t=$(date +%s)" -o latest.json
+          curl -fsSL "$B/latest.json.sig?t=$(date +%s)" -o latest.json.sig
+          V=$(jq -r .version latest.json); F=$(jq -r .file latest.json); SUM=$(jq -r .sha256 latest.json); SIZE=$(jq -r .size latest.json)
+          [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$F" == "NOKK-Print-Setup-$V.exe" ]] || { echo "bad manifest"; exit 1; }
+          if gh release view "v$V" -R "$REPO" >/dev/null 2>&1; then echo "v$V is already here"; exit 0; fi
+          curl -fsSL "$B/$F" -o "$F"
+          [ "$(sha256sum "$F" | cut -d' ' -f1)" = "$SUM" ] && [ "$(stat -c%s "$F")" = "$SIZE" ] || { echo "checksum mismatch"; exit 1; }
+          cp "$F" NOKK-Print-Setup.exe
+          gh release create "v$V" -R "$REPO" --latest --title "NOKK Print $V" \
+            --notes "Установка: скачайте **NOKK-Print-Setup.exe** и запустите. Обновления приходят в программу сами.
+
+          © 2026 Nizomjon Rajabov, NOKK. Barcha huquqlar himoyalangan / Все права защищены." \
+            "$F" NOKK-Print-Setup.exe latest.json latest.json.sig
+          # keep the 5 newest releases
+          gh release list -R "$REPO" --limit 100 --json tagName -q '.[].tagName' | sort -V | head -n -5 | while read -r t; do
+            gh release delete "$t" -R "$REPO" --yes --cleanup-tag; echo "removed $t"
+          done
